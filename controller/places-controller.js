@@ -3,7 +3,7 @@ const { v4: uuid } = require("uuid");
 const HttpError = require("../models/http-errors");
 
 // creating a dummy place
-const DUMMY_PLACES = [
+let DUMMY_PLACES = [
   {
     id: "p1",
     title: "Empire State Building",
@@ -88,7 +88,11 @@ const updatePlace = (req,res,next) => {
     res.status(200).json({place: updatedPlace});
 };
 
-const deletePlace = (req,res,next) => {};
+const deletePlace = (req,res,next) => {
+    const placeId = req.params.pid;
+    DUMMY_PLACES = DUMMY_PLACES.filter(p=>p.id !== placeId);
+    res.status(200).json({message:'Deleted place'});
+};
 
 // To export more than one function
 exports.getPlaceById = getPlaceById;
