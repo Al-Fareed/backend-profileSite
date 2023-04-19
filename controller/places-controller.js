@@ -40,23 +40,23 @@ const getPlaceById = (req, res, next) => {
 
 // fetching from DUMMY places to get the place by users id
 
-const getPlaceByUserId = (req, res, next) => {
+const getPlacesByUserId = (req, res, next) => {
   const userId = req.params.uid;
-  const user = DUMMY_PLACES.find((u) => {
+  const places = DUMMY_PLACES.filter((u) => {
     return u.creator === userId;
   });
-  if (!user) {
+  if (!places || places.length === 0) {
     //if found user with id then:
     // return res.status(404).json({ message: "Could not find place with user id " + userId }); //!Instead of throwing error from here
     return next(
       //   if not found user with id then:
       new HttpError(
-        `Could not find a place for the provided user id : ${userId}`,
+        `Could not find a places for the provided user id : ${userId}`,
         404
       )
     );
   }
-  res.json({ user });
+  res.json({ places });
 };
 
 // To create a new place(Adding places)
@@ -75,28 +75,28 @@ const createPlace = (req, res, next) => {
   res.status(201).json({ place: createPlace });
 };
 
-const updatePlace = (req,res,next) => {
-    const { title, description} = req.body;
-    const placeId = req.params.pid;
+const updatePlace = (req, res, next) => {
+  const { title, description } = req.body;
+  const placeId = req.params.pid;
 
-    const updatedPlace = { ...DUMMY_PLACES.find(p => p.id === placeId)};
-    const placeIndex  = DUMMY_PLACES.findIndex(p => p.id === placeId);
-    updatedPlace.title = title;
-    updatedPlace.description = description;
-    DUMMY_PLACES[placeIndex] = updatedPlace;
-    
-    res.status(200).json({place: updatedPlace});
+  const updatedPlace = { ...DUMMY_PLACES.find((p) => p.id === placeId) };
+  const placeIndex = DUMMY_PLACES.findIndex((p) => p.id === placeId);
+  updatedPlace.title = title;
+  updatedPlace.description = description;
+  DUMMY_PLACES[placeIndex] = updatedPlace;
+
+  res.status(200).json({ place: updatedPlace });
 };
 
-const deletePlace = (req,res,next) => {
-    const placeId = req.params.pid;
-    DUMMY_PLACES = DUMMY_PLACES.filter(p=>p.id !== placeId);
-    res.status(200).json({message:'Deleted place'});
+const deletePlace = (req, res, next) => {
+  const placeId = req.params.pid;
+  DUMMY_PLACES = DUMMY_PLACES.filter((p) => p.id !== placeId);
+  res.status(200).json({ message: "Deleted place" });
 };
 
 // To export more than one function
 exports.getPlaceById = getPlaceById;
-exports.getPlaceByUserId = getPlaceByUserId;
+exports.getPlacesByUserId = getPlacesByUserId;
 exports.createPlace = createPlace;
 exports.updatePlace = updatePlace;
 exports.deletePlace = deletePlace;
