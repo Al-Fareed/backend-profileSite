@@ -74,7 +74,7 @@ const createPlace = (req, res, next) => {
 
   res.status(201).json({ place: createPlace });
 };
-
+// To update places
 const updatePlace = (req, res, next) => {
   const { title, description } = req.body;
   const placeId = req.params.pid;
@@ -87,7 +87,7 @@ const updatePlace = (req, res, next) => {
 
   res.status(200).json({ place: updatedPlace });
 };
-
+// to delete place based on the id
 const deletePlace = (req, res, next) => {
   const placeId = req.params.pid;
   DUMMY_PLACES = DUMMY_PLACES.filter((p) => p.id !== placeId);
