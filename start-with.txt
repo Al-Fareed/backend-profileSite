@@ -1,0 +1,17 @@
+dependencies to download =
+npm init
+
+npm install express --save-dev
+or
+npm install express --save
+
+installing live server for node
+npm install nodemon --save-dev
+
+// Add scripts
+"scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+
+  npm install body-parser --save
