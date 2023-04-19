@@ -1,7 +1,8 @@
-const {v4 : uuid} = require('uuid')
+const { v4: uuid } = require("uuid");
 
 const HttpError = require("../models/http-errors");
 
+// creating a dummy place
 const DUMMY_PLACES = [
   {
     id: "p1",
@@ -15,6 +16,8 @@ const DUMMY_PLACES = [
     creator: "u1",
   },
 ];
+
+// fetching from DUMMY places to get the place by its ID
 
 const getPlaceById = (req, res, next) => {
   const placeId = req.params.pid;
@@ -35,6 +38,8 @@ const getPlaceById = (req, res, next) => {
 };
 //   function getPlaceById(parameters){} //?we can also define in this manner
 
+// fetching from DUMMY places to get the place by users id
+
 const getPlaceByUserId = (req, res, next) => {
   const userId = req.params.uid;
   const user = DUMMY_PLACES.find((u) => {
@@ -54,22 +59,40 @@ const getPlaceByUserId = (req, res, next) => {
   res.json({ user });
 };
 
-const createPlace = (req,res,next)=>{
-    const { title,description,coordinates,address,creator } = req.body;
-    const createPlace = {
-        id :uuid(),
-        title,
-        description,
-        location:coordinates,
-        address,
-        creator        
-    };
-    DUMMY_PLACES.push(createPlace);
+// To create a new place(Adding places)
+const createPlace = (req, res, next) => {
+  const { title, description, coordinates, address, creator } = req.body;
+  const createPlace = {
+    id: uuid(),
+    title,
+    description,
+    location: coordinates,
+    address,
+    creator,
+  };
+  DUMMY_PLACES.push(createPlace);
 
-    res.status(201).json({place:createPlace});
+  res.status(201).json({ place: createPlace });
 };
 
-// To export more than one function 
-exports.createPlace = createPlace;
+const updatePlace = (req,res,next) => {
+    const { title, description} = req.body;
+    const placeId = req.params.pid;
+
+    const updatedPlace = { ...DUMMY_PLACES.find(p => p.id === placeId)};
+    const placeIndex  = DUMMY_PLACES.findIndex(p => p.id === placeId);
+    updatedPlace.title = title;
+    updatedPlace.description = description;
+    DUMMY_PLACES[placeIndex] = updatedPlace;
+    
+    res.status(200).json({place: updatedPlace});
+};
+
+const deletePlace = (req,res,next) => {};
+
+// To export more than one function
 exports.getPlaceById = getPlaceById;
 exports.getPlaceByUserId = getPlaceByUserId;
+exports.createPlace = createPlace;
+exports.updatePlace = updatePlace;
+exports.deletePlace = deletePlace;
