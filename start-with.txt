@@ -8,7 +8,7 @@ npm install express --save
 installing live server for node
 npm install nodemon --save-dev
 
-// Add scripts
+// Add scripts in package.json
 "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon app.js"
