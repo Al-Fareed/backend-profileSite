@@ -18,7 +18,7 @@ let DUMMY_PLACES = [
 ];
 
 // fetching from DUMMY places to get the place by its ID
-
+// =--------------------------------------------------------------------
 const getPlaceById = (req, res, next) => {
   const placeId = req.params.pid;
   const place = DUMMY_PLACES.find((p) => {
@@ -27,7 +27,7 @@ const getPlaceById = (req, res, next) => {
   if (!place) {
     //if found places with id then:
     // return res.status(404).json({ message: "Could not find for " + placeId }); //!we can also write this to handle error
-    //TODO: handling the error in more efficient way, I am sending the error to app.js
+    //TODO: handling the error in more efficient way, I am sending the error to HttpError.js
     //   if not found places with id then:
     throw new HttpError(
       `Could not find a place for the provided id : ${placeId}`,
@@ -59,6 +59,7 @@ const getPlacesByUserId = (req, res, next) => {
   res.json({ places });
 };
 
+// =--------------------------------------------------------------------
 // To create a new place(Adding places)
 const createPlace = async (req, res, next) => {
   // checks for the validation, i.e., sent from places-routes
@@ -90,24 +91,30 @@ const createPlace = async (req, res, next) => {
 
   res.status(201).json({ place: createPlace });
 };
+// =--------------------------------------------------------------------
 // To update places
 const updatePlace = (req, res, next) => {
+  // check for the inputs from user
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     console.log(errors);
     throw new HttpError("Invalid inputs", 422);
   }
+  // get the value from user after checking for the inputs
   const { title, description } = req.body;
   const placeId = req.params.pid;
 
+// check for the place existence
   const updatedPlace = { ...DUMMY_PLACES.find((p) => p.id === placeId) };
   const placeIndex = DUMMY_PLACES.findIndex((p) => p.id === placeId);
+  // update the place
   updatedPlace.title = title;
   updatedPlace.description = description;
   DUMMY_PLACES[placeIndex] = updatedPlace;
 
   res.status(200).json({ place: updatedPlace });
 };
+// =--------------------------------------------------------------------
 // to delete place based on the id
 const deletePlace = (req, res, next) => {
   const placeId = req.params.pid;
