@@ -84,6 +84,12 @@ const createPlace = (req, res, next) => {
 };
 // To update places
 const updatePlace = (req, res, next) => {
+  const errors = validationResult(req);
+  if(!errors.isEmpty())
+  {
+    console.log(errors);
+    throw new HttpError('Invalid inputs',422);
+  }
   const { title, description } = req.body;
   const placeId = req.params.pid;
 
@@ -98,6 +104,9 @@ const updatePlace = (req, res, next) => {
 // to delete place based on the id
 const deletePlace = (req, res, next) => {
   const placeId = req.params.pid;
+  if(!DUMMY_PLACES.find(p=>p.id === placeId)){
+    throw new HttpError("Place does not exist",404);
+  }
   DUMMY_PLACES = DUMMY_PLACES.filter((p) => p.id !== placeId);
   res.status(200).json({ message: "Deleted place" });
 };
