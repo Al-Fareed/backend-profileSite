@@ -1,8 +1,13 @@
+//#region imports
 const { v4: uuid } = require("uuid");
+const mongoose = require('mongoose');
 const { validationResult } = require("express-validator");
 const HttpError = require("../models/http-errors");
 const getCoordsForAddress = require("../util/location");
 const Place = require("../models/place");
+const User = require("../models/user");
+//#endregion
+
 // creating a dummy place
 let DUMMY_PLACES = [
   {
@@ -18,8 +23,9 @@ let DUMMY_PLACES = [
   },
 ];
 
-// fetching from DUMMY places to get the place by its ID
-// =--------------------------------------------------------------------
+//#region fetching places
+
+//#region fetching places by placeId
 const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid;
 
@@ -48,9 +54,9 @@ const getPlaceById = async (req, res, next) => {
   }
   res.json({ place: place.toObject({ getters: true }) });
 };
-//   function getPlaceById(parameters){} //?we can also define in this manner
+//#endregion fetching places by placeId
 
-// fetching from DUMMY places to get the place by users id
+//#region fetching places by users id
 
 const getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.uid;
@@ -75,9 +81,11 @@ const getPlacesByUserId = async (req, res, next) => {
     places: places.map((place) => place.toObject({ getters: true })),
   });
 };
+//#endregion fetching places by users id
 
-// =--------------------------------------------------------------------
-// To create a new place(Adding places)
+//#endregion fetching places
+
+//#region adding new places
 const createPlace = async (req, res, next) => {
   // checks for the validation, i.e., sent from places-routes
   const errors = validationResult(req);
@@ -88,14 +96,14 @@ const createPlace = async (req, res, next) => {
   }
 
   const { title, description, address, creator } = req.body;
-
+  // fetching coordinates from API
   let coordinates;
   try {
     coordinates = await getCoordsForAddress(address);
   } catch (error) {
     return next(error);
   }
-
+  // creating a place and storing it in createdPlace
   const createdPlace = new Place({
     title,
     description,
@@ -104,17 +112,38 @@ const createPlace = async (req, res, next) => {
     image: "https://picsum.photos/200/300.webp",
     creator,
   });
-  // DUMMY_PLACES.push(createPlace); if we don't have db then try with this for creating documents
+
+  // checking whether the user exist to create place
+  let user;
   try {
-    await createdPlace.save();
+    user = await User.findById(creator);
+  } catch (error) {
+    return next(new HttpError("Creating place failed", 500));
+  }
+
+  // if user does not exist throw error
+  if (!user) {
+    return next(new HttpError("Could not find the user", 404));
+  }
+  console.log("User : " + user);
+
+  try {
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await createdPlace.save({ session: sess });
+    user.places.push(createdPlace);
+    await user.save({ session: sess });
+    await sess.commitTransaction();
   } catch (err) {
     const error = new HttpError("Creating place failed", 500);
     return next(error);
   }
   res.status(201).json({ place: createdPlace });
 };
-// =--------------------------------------------------------------------
-// To update places
+//#endregion
+
+//#region update places
+
 const updatePlace = async (req, res, next) => {
   // check for the inputs from user
   const errors = validationResult(req);
@@ -150,8 +179,9 @@ const updatePlace = async (req, res, next) => {
 
   res.status(200).json({ place: place.toObject({ getters: true }) });
 };
-// =--------------------------------------------------------------------
-// to delete place based on the id
+//#endregion update places
+
+//#region delete place
 const deletePlace = async (req, res, next) => {
   const placeId = req.params.pid;
   let place;
@@ -167,10 +197,12 @@ const deletePlace = async (req, res, next) => {
   }
   res.status(200).json({ message: "Deleted place" });
 };
+//#endregion delete place
 
-// To export more than one function
+//#region To export more than one function
 exports.getPlaceById = getPlaceById;
 exports.getPlacesByUserId = getPlacesByUserId;
 exports.createPlace = createPlace;
 exports.updatePlace = updatePlace;
 exports.deletePlace = deletePlace;
+//#endregion
