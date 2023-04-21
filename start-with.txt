@@ -23,3 +23,4 @@ npm install nodemon --save-dev
   npm install --save axios
 
   npm install --save mongoose
+  npm install --save mongoose-unique-validator

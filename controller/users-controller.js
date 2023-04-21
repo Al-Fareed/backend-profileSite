@@ -41,7 +41,7 @@ const signup = (req, res, next) => {
 // For login
 const login = (req, res, next) => {
   const { email, password } = req.body;
-//   Check whether the user exists
+//   Check whether the user exists 
   const identifiedUser = DUMMY_USERS.find((u) => u.email === email);
   if (!identifiedUser || !identifiedUser.password === password) {
     throw new HttpError("User does not exist", 401);
