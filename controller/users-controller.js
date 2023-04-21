@@ -33,7 +33,7 @@ const signup = async (req, res, next) => {
   if (!errors.isEmpty()) {
     return next(new HttpError("Invalid credentials entered", 422));
   }
-  const { name, email, password, places } = req.body;
+  const { name, email, password } = req.body;
   let existingUser;
   try {
     existingUser = await User.findOne({ email: email });
@@ -50,7 +50,7 @@ const signup = async (req, res, next) => {
     email,
     image: "https://picsum.photos/200/300.webp",
     password,
-    places,
+    places:[]
   });
   try {
     await createdUser.save();
@@ -79,6 +79,8 @@ const login = async (req, res, next) => {
 };
 //#endregion login
 
+//#region exporting function
 exports.getUsers = getUsers;
 exports.signup = signup;
 exports.login = login;
+//#endregion
