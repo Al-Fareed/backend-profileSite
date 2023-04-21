@@ -111,7 +111,7 @@ const createPlace = async (req, res, next) => {
 };
 // =--------------------------------------------------------------------
 // To update places
-const updatePlace = (req, res, next) => {
+const updatePlace = async(req, res, next) => {
   // check for the inputs from user
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -124,13 +124,29 @@ const updatePlace = (req, res, next) => {
 
   // check for the place existence
   const updatedPlace = { ...DUMMY_PLACES.find((p) => p.id === placeId) };
-  const placeIndex = DUMMY_PLACES.findIndex((p) => p.id === placeId);
-  // update the place
-  updatedPlace.title = title;
-  updatedPlace.description = description;
-  DUMMY_PLACES[placeIndex] = updatedPlace;
+  // #region without db
+  // const placeIndex = DUMMY_PLACES.findIndex((p) => p.id === placeId);
+  // // update the place
+  //#endregion without db
 
-  res.status(200).json({ place: updatedPlace });
+  let place;
+  try{
+    place = await Place.findById(placeId);
+  }
+  catch(err){
+    return next(new HttpError('Could not update',500))
+  }
+  place.title = title;
+  place.description = description;
+  // DUMMY_PLACES[placeIndex] = updatedPlace;
+  try{
+    await place.save();
+  }catch(err){
+    return next(new HttpError("Something went wrong, couldn't update",500));
+  }
+  
+
+  res.status(200).json({ place: place.toObject({getters : true}) });
 };
 // =--------------------------------------------------------------------
 // to delete place based on the id
