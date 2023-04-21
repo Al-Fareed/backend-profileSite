@@ -1,3 +1,4 @@
+// To handle errors thrown from user
 class HttpError extends Error{
     constructor(message,errorCode){
         super(message); //ADd a message property

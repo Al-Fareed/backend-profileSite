@@ -1,18 +1,8 @@
 //#region imports
-const { v4: uuid } = require("uuid");
 const { validationResult } = require("express-validator");
 const HttpError = require("../models/http-errors");
 const User = require("../models/user");
 //#endregion imports
-
-const DUMMY_USERS = [
-  {
-    id: "u1",
-    name: "Alfred",
-    email: "alfred@gmail.com",
-    password: "pass@alfred",
-  },
-];
 
 //#region fetchUser
 const getUsers = async (req, res, next) => {

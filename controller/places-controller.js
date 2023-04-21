@@ -1,5 +1,4 @@
 //#region imports
-const { v4: uuid } = require("uuid");
 const mongoose = require('mongoose');
 const { validationResult } = require("express-validator");
 const HttpError = require("../models/http-errors");
@@ -8,30 +7,15 @@ const Place = require("../models/place");
 const User = require("../models/user");
 //#endregion
 
-// creating a dummy place
-let DUMMY_PLACES = [
-  {
-    id: "p1",
-    title: "Empire State Building",
-    description: "One of the most famous place you know",
-    location: {
-      lat: 40.7484474,
-      lng: -73.9871516,
-    },
-    address: "20 W 34th street, New York 1001",
-    creator: "u1",
-  },
-];
-
 //#region fetching places
 
 //#region fetching places by placeId
 const getPlaceById = async (req, res, next) => {
-  const placeId = req.params.pid;
+  const placeId = req.params.pid; //getting id from url
 
   let place;
   try {
-    place = await Place.findById(placeId);
+    place = await Place.findById(placeId); //fetching it in database
   } catch (err) {
     const error = new HttpError(
       "Something went wrong, Could not find the place",
@@ -41,9 +25,6 @@ const getPlaceById = async (req, res, next) => {
   }
 
   if (!place) {
-    //if found places with id then:
-    // return res.status(404).json({ message: "Could not find for " + placeId }); //!we can also write this to handle error
-    //TODO: handling the error in more efficient way, I am sending the error to HttpError.js
     //   if not found places with id then:
     return next(
       new HttpError(
@@ -60,15 +41,14 @@ const getPlaceById = async (req, res, next) => {
 
 const getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.uid;
-  let places;
+  let userWithPlaces;
   try {
-    places = await Place.find({ creator: userId });
+    userWithPlaces = await User.findById(userId).populate('places');
   } catch (err) {
     return next(new HttpError("Could not find place by user id", 500));
   }
-  if (!places || places.length === 0) {
-    //if found user with id then:
-    // return res.status(404).json({ message: "Could not find place with user id " + userId }); //!Instead of throwing error from here
+  if (!userWithPlaces || userWithPlaces.places.length === 0) {
+    //if not found user with id then:
     return next(
       //   if not found user with id then:
       new HttpError(
@@ -78,7 +58,7 @@ const getPlacesByUserId = async (req, res, next) => {
     );
   }
   res.json({
-    places: places.map((place) => place.toObject({ getters: true })),
+    places: userWithPlaces.places.map((place) => place.toObject({ getters: true })),
   });
 };
 //#endregion fetching places by users id
@@ -86,6 +66,7 @@ const getPlacesByUserId = async (req, res, next) => {
 //#endregion fetching places
 
 //#region adding new places
+
 const createPlace = async (req, res, next) => {
   // checks for the validation, i.e., sent from places-routes
   const errors = validationResult(req);

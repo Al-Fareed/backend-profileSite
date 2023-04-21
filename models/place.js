@@ -1,6 +1,9 @@
+//#region imports
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+//#endregion
 
+//#region creating schema for place
 const placeSchema = new Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
@@ -13,5 +16,8 @@ const placeSchema = new Schema({
   creator: { type: mongoose.Types.ObjectId,required :true, ref :'User' }
   // the above line will establish connection between place and User schema, through ref
 });
+//#endregion
 
-module.exports = mongoose.model('Place',placeSchema); //creates Schema
+//#region exporting the function
+module.exports = mongoose.model('Place',placeSchema); //created Schema exports
+//#endregion
