@@ -24,39 +24,41 @@ const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid;
 
   let place;
-  try{
+  try {
     place = await Place.findById(placeId);
-  }catch(err)
-  {
-    const error = new HttpError('Something went wrong, Could not find the place',500);
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong, Could not find the place",
+      500
+    );
     return next(error);
   }
-
 
   if (!place) {
     //if found places with id then:
     // return res.status(404).json({ message: "Could not find for " + placeId }); //!we can also write this to handle error
     //TODO: handling the error in more efficient way, I am sending the error to HttpError.js
     //   if not found places with id then:
-    return next( new HttpError(
-      `Could not find a place for the provided id : ${placeId}`,
-      404
-    ));
+    return next(
+      new HttpError(
+        `Could not find a place for the provided id : ${placeId}`,
+        404
+      )
+    );
   }
-  res.json({ place : place.toObject({getters : true}) });
+  res.json({ place: place.toObject({ getters: true }) });
 };
 //   function getPlaceById(parameters){} //?we can also define in this manner
 
 // fetching from DUMMY places to get the place by users id
 
-const getPlacesByUserId = async(req, res, next) => {
-  const userId =  req.params.uid;
-let places;
-  try{
-    places = await Place.find({creator : userId});
-  }catch(err)
-  {
-    return next(new HttpError("Could not find place by user id", 500))
+const getPlacesByUserId = async (req, res, next) => {
+  const userId = req.params.uid;
+  let places;
+  try {
+    places = await Place.find({ creator: userId });
+  } catch (err) {
+    return next(new HttpError("Could not find place by user id", 500));
   }
   if (!places || places.length === 0) {
     //if found user with id then:
@@ -69,7 +71,9 @@ let places;
       )
     );
   }
-  res.json({ places : places.map(place => place.toObject({getters:true})) });
+  res.json({
+    places: places.map((place) => place.toObject({ getters: true })),
+  });
 };
 
 // =--------------------------------------------------------------------
@@ -111,7 +115,7 @@ const createPlace = async (req, res, next) => {
 };
 // =--------------------------------------------------------------------
 // To update places
-const updatePlace = async(req, res, next) => {
+const updatePlace = async (req, res, next) => {
   // check for the inputs from user
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -130,32 +134,37 @@ const updatePlace = async(req, res, next) => {
   //#endregion without db
 
   let place;
-  try{
+  try {
     place = await Place.findById(placeId);
-  }
-  catch(err){
-    return next(new HttpError('Could not update',500))
+  } catch (err) {
+    return next(new HttpError("Could not update", 500));
   }
   place.title = title;
   place.description = description;
   // DUMMY_PLACES[placeIndex] = updatedPlace;
-  try{
+  try {
     await place.save();
-  }catch(err){
-    return next(new HttpError("Something went wrong, couldn't update",500));
+  } catch (err) {
+    return next(new HttpError("Something went wrong, couldn't update", 500));
   }
-  
 
-  res.status(200).json({ place: place.toObject({getters : true}) });
+  res.status(200).json({ place: place.toObject({ getters: true }) });
 };
 // =--------------------------------------------------------------------
 // to delete place based on the id
-const deletePlace = (req, res, next) => {
+const deletePlace = async (req, res, next) => {
   const placeId = req.params.pid;
-  if (!DUMMY_PLACES.find((p) => p.id === placeId)) {
-    throw new HttpError("Place does not exist", 404);
+  let place;
+  try {
+    place = await Place.findById(placeId);
+  } catch (err) {
+    return next(new HttpError("Could not find place to delete", 500));
   }
-  DUMMY_PLACES = DUMMY_PLACES.filter((p) => p.id !== placeId);
+  try {
+    await place.deleteOne();
+  } catch (error) {
+    return next(new HttpError("Could not delete place", 500));
+  }
   res.status(200).json({ message: "Deleted place" });
 };
 
