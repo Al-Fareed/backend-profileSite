@@ -2,6 +2,7 @@ const { v4: uuid } = require("uuid");
 const { validationResult } = require("express-validator");
 const HttpError = require("../models/http-errors");
 const getCoordsForAddress = require("../util/location");
+const Place = require("../models/place");
 // creating a dummy place
 let DUMMY_PLACES = [
   {
@@ -19,22 +20,30 @@ let DUMMY_PLACES = [
 
 // fetching from DUMMY places to get the place by its ID
 // =--------------------------------------------------------------------
-const getPlaceById = (req, res, next) => {
+const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid;
-  const place = DUMMY_PLACES.find((p) => {
-    return p.id === placeId;
-  });
+
+  let place;
+  try{
+    place = await Place.findById(placeId);
+  }catch(err)
+  {
+    const error = new HttpError('Something went wrong, Could not find the place',500);
+    return next(error);
+  }
+
+
   if (!place) {
     //if found places with id then:
     // return res.status(404).json({ message: "Could not find for " + placeId }); //!we can also write this to handle error
     //TODO: handling the error in more efficient way, I am sending the error to HttpError.js
     //   if not found places with id then:
-    throw new HttpError(
+    return next( new HttpError(
       `Could not find a place for the provided id : ${placeId}`,
       404
-    );
+    ));
   }
-  res.json({ place });
+  res.json({ place : place.toObject({getters : true}) });
 };
 //   function getPlaceById(parameters){} //?we can also define in this manner
 
@@ -71,25 +80,30 @@ const createPlace = async (req, res, next) => {
   }
 
   const { title, description, address, creator } = req.body;
-  
+
   let coordinates;
   try {
-    coordinates =await getCoordsForAddress(address);
+    coordinates = await getCoordsForAddress(address);
   } catch (error) {
     return next(error);
   }
 
-  const createPlace = {
-    id: uuid(),
+  const createdPlace = new Place({
     title,
     description,
-    location: coordinates,
     address,
+    location: coordinates,
+    image: "https://picsum.photos/200/300.webp",
     creator,
-  };
-  DUMMY_PLACES.push(createPlace);
-
-  res.status(201).json({ place: createPlace });
+  });
+  // DUMMY_PLACES.push(createPlace); if we don't have db then try with this for creating documents
+  try {
+    await createdPlace.save();
+  } catch (err) {
+    const error = new HttpError("Creating place failed", 500);
+    return next(error);
+  }
+  res.status(201).json({ place: createdPlace });
 };
 // =--------------------------------------------------------------------
 // To update places
@@ -104,7 +118,7 @@ const updatePlace = (req, res, next) => {
   const { title, description } = req.body;
   const placeId = req.params.pid;
 
-// check for the place existence
+  // check for the place existence
   const updatedPlace = { ...DUMMY_PLACES.find((p) => p.id === placeId) };
   const placeIndex = DUMMY_PLACES.findIndex((p) => p.id === placeId);
   // update the place
