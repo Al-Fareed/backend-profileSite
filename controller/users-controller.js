@@ -65,7 +65,7 @@ const login = async (req, res, next) => {
     return next(new HttpError("Incorrect password", 401));
   }
 
-  res.json({ message: "Logged in Successfully" });
+  res.json({ message: "Logged in Successfully", user : existingUser.toObject({getters :true}) });
 };
 //#endregion login
 

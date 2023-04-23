@@ -129,19 +129,16 @@ const updatePlace = async (req, res, next) => {
   // check for the inputs from user
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    console.log(errors);
-    throw new HttpError("Invalid inputs", 422);
+    return next(new HttpError("Invalid inputs", 422)
+    );
   }
   // get the value from user after checking for the inputs
   const { title, description } = req.body;
   const placeId = req.params.pid;
 
   // check for the place existence
-  const updatedPlace = { ...DUMMY_PLACES.find((p) => p.id === placeId) };
-  // #region without db
-  // const placeIndex = DUMMY_PLACES.findIndex((p) => p.id === placeId);
-  // // update the place
-  //#endregion without db
+  // const updatedPlace = { ...DUMMY_PLACES.find((p) => p.id === placeId) };
+ 
 
   let place;
   try {
