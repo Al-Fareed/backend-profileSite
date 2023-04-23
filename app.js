@@ -9,6 +9,13 @@ const app = express();
 
 app.use(bodyParser.json());
 
+app.use((req,res,next)=>{
+  res.setHeader('Access-Control-Allow-Origin','*');
+  res.setHeader('Access-Control-Allow-Headers','Origin,X-Requested-With,Content-Type,Accept,Authorization');
+  res.setHeader('Access-Control-Allow-Methods','GET,POST,PATCH,DELETE');
+  next();
+});
+
 app.use("/api/places", placesRoutes); //middleware from places-routes
 app.use("/api/users", usersRoutes); //middleware from users-routes
 
@@ -25,7 +32,7 @@ app.use((error, req, res, next) => {
   res.json({ message: error.message || "An unknown error occurred!" });
 });
 
-mongoose.connect('mongodb+srv://AlFareed:Oyl1MxjZiH5FY96l@cluster0.urwkxxh.mongodb.net/places?retryWrites=true&w=majority')
+mongoose.connect('mongodb+srv://AlFareed:Oyl1MxjZiH5FY96l@cluster0.urwkxxh.mongodb.net/mern?retryWrites=true&w=majority')
 .then(()=>{
     console.log('Connected to database ');
     
