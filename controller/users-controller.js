@@ -1,4 +1,5 @@
 //#region imports
+const fs= require('fs');
 const { validationResult } = require("express-validator");
 const HttpError = require("../models/http-errors");
 const User = require("../models/user");
@@ -21,6 +22,12 @@ const signup = async (req, res, next) => {
   const errors = validationResult(req);
   // to validate the user inputs through validationResult, which is in user-routes.js
   if (!errors.isEmpty()) {
+    if(req.file){
+      fs.unlink(req.file.path,(err)=>{
+        console.log(err);
+        
+      })
+    }
     return next(new HttpError("Invalid credentials entered", 422));
   }
   const { name, email, password } = req.body;
@@ -38,7 +45,7 @@ const signup = async (req, res, next) => {
   const createdUser = new User({
     name, //similar to name :name
     email,
-    image: "https://picsum.photos/200/300.webp",
+    image: req.file.path,
     password,
     places:[]
   });

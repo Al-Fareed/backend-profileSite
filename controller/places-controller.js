@@ -90,7 +90,7 @@ const createPlace = async (req, res, next) => {
     description,
     address,
     location: coordinates,
-    image: "https://picsum.photos/200/300.webp",
+    image:req.file.path,
     creator,
   });
 

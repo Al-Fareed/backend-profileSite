@@ -5,6 +5,7 @@ const express = require("express");
 
 const { check } = require("express-validator");
 const placesControllers = require("../controller/places-controller");
+const fileUpload = require('../middleware/file-upload');
 
 const router = express.Router();
 
@@ -15,6 +16,7 @@ router.get("/user/:uid", placesControllers.getPlacesByUserId);
 // to create a new place
 router.post(
   "/",
+  fileUpload.single('image'),
   [
     // validators from express validators
     check("title").not().isEmpty(),
