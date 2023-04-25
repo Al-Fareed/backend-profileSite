@@ -1,5 +1,5 @@
 //#region imports
-const fs= require('fs');
+const fs = require("fs");
 const { validationResult } = require("express-validator");
 const HttpError = require("../models/http-errors");
 const User = require("../models/user");
@@ -11,9 +11,9 @@ const getUsers = async (req, res, next) => {
   try {
     users = await User.find({}, "-password");
   } catch (err) {
-    return next(new HttpError('Could not fetch users',500));
+    return next(new HttpError("Could not fetch users", 500));
   }
-  res.json({ users: users.map(user => user.toObject({getters :true})) });
+  res.json({ users: users.map((user) => user.toObject({ getters: true })) });
 };
 //#endregion fetchUser
 
@@ -22,12 +22,6 @@ const signup = async (req, res, next) => {
   const errors = validationResult(req);
   // to validate the user inputs through validationResult, which is in user-routes.js
   if (!errors.isEmpty()) {
-    if(req.file){
-      fs.unlink(req.file.path,(err)=>{
-        console.log(err);
-        
-      })
-    }
     return next(new HttpError("Invalid credentials entered", 422));
   }
   const { name, email, password } = req.body;
@@ -47,7 +41,7 @@ const signup = async (req, res, next) => {
     email,
     image: req.file.path,
     password,
-    places:[]
+    places: [],
   });
   try {
     await createdUser.save();
@@ -72,7 +66,10 @@ const login = async (req, res, next) => {
     return next(new HttpError("Incorrect password", 401));
   }
 
-  res.json({ message: "Logged in Successfully", user : existingUser.toObject({getters :true}) });
+  res.json({
+    message: "Logged in Successfully",
+    user: existingUser.toObject({ getters: true }),
+  });
 };
 //#endregion login
 

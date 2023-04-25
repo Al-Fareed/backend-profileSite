@@ -1,5 +1,6 @@
 //#region imports
-const mongoose = require('mongoose');
+const fs = require("fs");
+const mongoose = require("mongoose");
 const { validationResult } = require("express-validator");
 const HttpError = require("../models/http-errors");
 const getCoordsForAddress = require("../util/location");
@@ -43,7 +44,7 @@ const getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.uid;
   let userWithPlaces;
   try {
-    userWithPlaces = await User.findById(userId).populate('places');
+    userWithPlaces = await User.findById(userId).populate("places");
   } catch (err) {
     return next(new HttpError("Could not find place by user id", 500));
   }
@@ -58,7 +59,9 @@ const getPlacesByUserId = async (req, res, next) => {
     );
   }
   res.json({
-    places: userWithPlaces.places.map((place) => place.toObject({ getters: true })),
+    places: userWithPlaces.places.map((place) =>
+      place.toObject({ getters: true })
+    ),
   });
 };
 //#endregion fetching places by users id
@@ -90,7 +93,7 @@ const createPlace = async (req, res, next) => {
     description,
     address,
     location: coordinates,
-    image:req.file.path,
+    image: req.file.path,
     creator,
   });
 
@@ -129,8 +132,7 @@ const updatePlace = async (req, res, next) => {
   // check for the inputs from user
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(new HttpError("Invalid inputs", 422)
-    );
+    return next(new HttpError("Invalid inputs", 422));
   }
   // get the value from user after checking for the inputs
   const { title, description } = req.body;
@@ -138,7 +140,6 @@ const updatePlace = async (req, res, next) => {
 
   // check for the place existence
   // const updatedPlace = { ...DUMMY_PLACES.find((p) => p.id === placeId) };
- 
 
   let place;
   try {
@@ -164,25 +165,29 @@ const deletePlace = async (req, res, next) => {
   const placeId = req.params.pid;
   let place;
   try {
-    place = await Place.findById(placeId).populate('creator');
+    place = await Place.findById(placeId).populate("creator");
     // populate is a function that fetches placeId while deleting and removes it from the place document
   } catch (err) {
     return next(new HttpError("Could not find place to delete", 500));
   }
-  if(!place)
-  {
-    return next(new HttpError('Could not find the place for this ID',404))
+  if (!place) {
+    return next(new HttpError("Could not find the place for this ID", 404));
   }
+  let imagePath = place.image;
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
-    await place.deleteOne({session :sess});
+    await place.deleteOne({ session: sess });
     place.creator.places.pull(place);
-    await place.creator.save({session:sess});
+    await place.creator.save({ session: sess });
     await sess.commitTransaction();
   } catch (error) {
     return next(new HttpError("Could not delete place", 500));
   }
+  fs.unlink(imagePath,err=>{
+      console.log(err);
+
+  });
   res.status(200).json({ message: "Deleted place" });
 };
 //#endregion delete place
