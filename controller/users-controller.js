@@ -1,5 +1,6 @@
 //#region imports
 const fs = require("fs");
+const bcrypt =  require('bcryptjs');
 const { validationResult } = require("express-validator");
 const HttpError = require("../models/http-errors");
 const User = require("../models/user");
@@ -36,11 +37,20 @@ const signup = async (req, res, next) => {
     return next(new HttpError("User already exist,Please login", 422));
   }
   // creates a new user
+
+  let hashedPassword;
+  try{
+    hashedPassword = await bcrypt.hash(password,12);
+  }catch(err)
+  {
+      return next(new HttpError("Could not create user, please try again.",500));
+  }
+
   const createdUser = new User({
     name, //similar to name :name
     email,
     image: req.file.path,
-    password,
+    password:hashedPassword,
     places: [],
   });
   try {
