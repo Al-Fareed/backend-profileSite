@@ -72,9 +72,17 @@ const login = async (req, res, next) => {
     return next(new HttpError("No user found", 500));
   }
 
-  if (!existingUser || existingUser.password !== password) {
-    return next(new HttpError("Incorrect password", 401));
+  if (!existingUser ) {
+    return next(new HttpError("User does not exist", 401));
   }
+  let passwordIsValid = false;
+  try {
+    passwordIsValid = await bcrypt.compare(password,existingUser.password)
+  } catch (error) {
+    return next(new HttpError("Incorrect Password",500))    
+  }
+
+  if(!passwordIsValid)
 
   res.json({
     message: "Logged in Successfully",
