@@ -26,7 +26,9 @@ const signup = async (req, res, next) => {
   if (!errors.isEmpty()) {
     return next(new HttpError("Invalid credentials entered", 422));
   }
+
   const { name, email, password } = req.body;
+  
   let existingUser;
   try {
     existingUser = await User.findOne({ email: email });
@@ -60,19 +62,25 @@ const signup = async (req, res, next) => {
   }
   // generating token
   let token;
-  try{
+  try {
     token = jwt.sign(
       { userId: createdUser.id, email: createdUser.email },
-      "supersecret_dont_share",
-      { expiresIn: "12h" }
+      'supersecret_dont_share',
+      { expiresIn: '1h' }
     );
-  }catch(error)
-  {
-    return next(new HttpError("Signup failed, try again", 500));
+  } catch (err) {
+    const error = new HttpError(
+      'Signing up failed, please try again later.',
+      500
+    );
+    return next(error);
   }
 
-  res.status(201).json({ userId : createdUser.id,email:createdUser.email,token:token});
+  res
+    .status(201)
+    .json({ userId: createdUser.id, email: createdUser.email, token: token });
 };
+
 //#endregion signup
 
 //#region login
