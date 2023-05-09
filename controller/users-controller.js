@@ -1,6 +1,7 @@
 //#region imports
 const fs = require("fs");
-const bcrypt =  require('bcryptjs');
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 const { validationResult } = require("express-validator");
 const HttpError = require("../models/http-errors");
 const User = require("../models/user");
@@ -39,18 +40,17 @@ const signup = async (req, res, next) => {
   // creates a new user
 
   let hashedPassword;
-  try{
-    hashedPassword = await bcrypt.hash(password,12);
-  }catch(err)
-  {
-      return next(new HttpError("Could not create user, please try again.",500));
+  try {
+    hashedPassword = await bcrypt.hash(password, 12);
+  } catch (err) {
+    return next(new HttpError("Could not create user, please try again.", 500));
   }
 
   const createdUser = new User({
     name, //similar to name :name
     email,
     image: req.file.path,
-    password:hashedPassword,
+    password: hashedPassword,
     places: [],
   });
   try {
@@ -58,7 +58,20 @@ const signup = async (req, res, next) => {
   } catch (error) {
     return next(new HttpError("Signup failed, try again", 500));
   }
-  res.status(201).json({ user: createdUser.toObject({ getters: true }) });
+  // generating token
+  let token;
+  try{
+    token = jwt.sign(
+      { userId: createdUser.id, email: createdUser.email },
+      "supersecret_dont_share",
+      { expiresIn: "12h" }
+    );
+  }catch(error)
+  {
+    return next(new HttpError("Signup failed, try again", 500));
+  }
+
+  res.status(201).json({ userId : createdUser.id,email:createdUser.email,token:token});
 };
 //#endregion signup
 
@@ -72,22 +85,35 @@ const login = async (req, res, next) => {
     return next(new HttpError("No user found", 500));
   }
 
-  if (!existingUser ) {
+  if (!existingUser) {
     return next(new HttpError("User does not exist", 401));
   }
   let passwordIsValid = false;
   try {
-    passwordIsValid = await bcrypt.compare(password,existingUser.password)
+    passwordIsValid = await bcrypt.compare(password, existingUser.password);
   } catch (error) {
-    return next(new HttpError("Incorrect Password",500))    
+    return next(new HttpError("Incorrect Password", 500));
   }
 
-  if(!passwordIsValid)
+  // generating token
+  let token;
+  try{
+    token = jwt.sign(
+      { userId: existingUser.id, email: existingUser.email },
+      "supersecret_dont_share",
+      { expiresIn: "12h" }
+    );
+  }catch(error)
+  {
+    return next(new HttpError("Logging in failed, try again", 500));
+  }
 
-  res.json({
-    message: "Logged in Successfully",
-    user: existingUser.toObject({ getters: true }),
-  });
+  if (!passwordIsValid)
+    res.json({
+      userId : existingUser.id,
+      email : existingUser.email,
+      token :token
+    });
 };
 //#endregion login
 
