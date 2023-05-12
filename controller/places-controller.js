@@ -53,7 +53,7 @@ const getPlacesByUserId = async (req, res, next) => {
     return next(
       //   if not found user with id then:
       new HttpError(
-        `Could not find a places for the provided user id : ${userId}`,
+        'Could not find a places for this user.',
         404
       )
     );
@@ -179,6 +179,10 @@ const deletePlace = async (req, res, next) => {
   if (!place) {
     return next(new HttpError("Could not find the place for this ID", 404));
   }
+  if(place.creator.id !== req.userData.userId){
+    return next(new HttpError('You are not allowed to delete this place',401))
+  }
+
   let imagePath = place.image;
   try {
     const sess = await mongoose.startSession();
