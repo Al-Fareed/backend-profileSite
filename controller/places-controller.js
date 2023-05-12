@@ -147,6 +147,12 @@ const updatePlace = async (req, res, next) => {
   } catch (err) {
     return next(new HttpError("Could not update", 500));
   }
+
+  if(place.creator.toString() !== req.userData.userId)
+  {
+    return next(new HttpError("You are not allowed to edit this place",401))
+  }
+
   place.title = title;
   place.description = description;
   // DUMMY_PLACES[placeIndex] = updatedPlace;
