@@ -100,7 +100,7 @@ const createPlace = async (req, res, next) => {
   // checking whether the user exist to create place
   let user;
   try {
-    user = await User.findById(req.userData.userI);
+    user = await User.findById(req.userData.userId);
   } catch (error) {
     return next(new HttpError("Creating place failed", 500));
   }
